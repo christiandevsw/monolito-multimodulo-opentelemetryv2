@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 
 //import com.dojo.customers.services.BlobStorageService;
+import com.dojo.customers.services.CustomerBlobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -22,11 +23,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class CustomerController {
 	private Logger logger = LoggerFactory.getLogger(CustomerController.class);
 	private CustomerService service;
-//	private BlobStorageService blobStorageService;
+	private CustomerBlobService storageService;
 
-	public CustomerController(CustomerService service) {
+	public CustomerController(CustomerService service,CustomerBlobService storageService) {
 		this.service = service;
-//		this.blobStorageService = blobStorageService;
+		this.storageService = storageService;
 	}
 
 	@RequestMapping(method =  RequestMethod.HEAD,path = "/{id}")
@@ -79,6 +80,18 @@ public class CustomerController {
 		return ResponseEntity.ok(service.save(customer));
 	}
 
+//	@GetMapping("/blob/{name}")
+//	public ResponseEntity<byte[]> readBlob(@PathVariable String name) {
+//		return storageService.getBytesBlob(name);
+//	}
+
+	@GetMapping("/blob/names")
+	public ResponseEntity<List<String>> listBlobNames() {
+		logger.info("Total de elementos del blobStorage: "+ storageService.listBlobNames().size());
+		return ResponseEntity.ok(storageService.listBlobNames());
+	}
+
+
 	//v2
 //	@PostMapping
 //	public ResponseEntity<Customer> save(Customer customer, @RequestParam MultipartFile photo) throws IOException {
@@ -93,7 +106,5 @@ public class CustomerController {
 //		String url = blobStorageService.uploadFile(file);
 //		return ResponseEntity.ok(url);
 //	}
-
-
 
 }
