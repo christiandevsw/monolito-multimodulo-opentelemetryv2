@@ -1,10 +1,11 @@
 package com.dojo.customers.services;
 
-
+import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.BlobItem;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,8 @@ import java.util.Optional;
 public class BlobStorageServiceImpl implements CustomerBlobService{
     private BlobContainerClient containerClient;
 
-    public BlobStorageServiceImpl(){
+    public BlobStorageServiceImpl(@Value("${conection-string.blob.storage}") String connectionString,
+                                  @Value("${container.name.customer}") String containerName){
         BlobServiceClient serviceClient = new BlobServiceClientBuilder()
                 .connectionString(connectionString)
                 .buildClient();
@@ -29,18 +31,29 @@ public class BlobStorageServiceImpl implements CustomerBlobService{
         return blobNames;
     }
 
+
+    //v1
+//    @Override
+//    public Optional<String> findFileBlob(String name) {
+//        Optional<BlobItem> optional = containerClient.listBlobs()
+//                .stream()
+//                .filter(b -> b.getName().equalsIgnoreCase(name))
+//                .findFirst();
+//        if (optional.isPresent()) {
+//            return Optional.of(optional.get().getName());
+//        }
+//        return Optional.empty();
+//     }
+
+    //v2
     @Override
-    public Optional<String> findFileBlob(String name) {
-        Optional<BlobItem> optional = containerClient.listBlobs()
-                .stream()
-                .filter(b -> b.getName().equalsIgnoreCase(name))
-                .findFirst();
-        if (optional.isPresent()) {
-            BlobClient blobClient=containerClient.getBlobClient(optional.get().getName());
+    public Optional<BlobClient> findFileBlob(String name) {
+        BlobClient bobClient=containerClient.getBlobClient(name);
+        if(bobClient.exists()){
+            return Optional.of(bobClient);
         }
         return Optional.empty();
     }
-
 
 //    @Override
 //    public ResponseEntity<byte[]> getBytesBlob(String name) {

@@ -27,7 +27,7 @@ public class OrderController {
 //        this.blobStorageService = blobStorageService;
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<?> listAll() {
         logger.info("Ordenes consultados: "+Map.of("total",orderService.listAllOrders().size()));
         return ResponseEntity.ok(orderService.listAllOrders());
