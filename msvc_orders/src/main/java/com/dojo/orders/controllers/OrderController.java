@@ -1,18 +1,19 @@
 package com.dojo.orders.controllers;
 
-//import com.dojo.customers.services.BlobStorageService;
+import com.azure.storage.blob.BlobClient;
+import com.dojo.customers.entities.Customer;
+import com.dojo.customers.services.CustomerBlobService;
 import com.dojo.orders.entities.Order;
 import com.dojo.orders.entities.OrderDetail;
+import com.dojo.orders.services.OrderBlobService;
 import com.dojo.orders.services.OrderService;
-import com.dojo.orders.services.OrderServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 import java.util.*;
 
 @RestController
@@ -20,17 +21,24 @@ import java.util.*;
 public class OrderController {
      private Logger logger = LoggerFactory.getLogger(OrderController.class);
      private OrderService orderService;
-//    private BlobStorageService blobStorageService;
+     private OrderBlobService storageService;
 
-    public OrderController(OrderService orderService){
+    public OrderController(OrderService orderService, OrderBlobService storageService){
         this.orderService = orderService;
-//        this.blobStorageService = blobStorageService;
+        this.storageService = storageService;
     }
 
     @GetMapping("/all")
     public ResponseEntity<?> listAll() {
         logger.info("Ordenes consultados: "+Map.of("total",orderService.listAllOrders().size()));
         return ResponseEntity.ok(orderService.listAllOrders());
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Order>> getCustomerByPage(Pageable pageable) {
+        Page<Order> orderPage = orderService.getPageByOrder(pageable);
+        logger.info("Ordenes consultados: "+ Map.of("total", orderPage.getNumberOfElements()));
+        return ResponseEntity.ok(orderPage.getContent());
     }
 
     @GetMapping("/username/{username}")
@@ -85,10 +93,15 @@ public class OrderController {
         return ResponseEntity.ok(orderUpdated);
     }
 
-//    @PostMapping("/upload")
-//    public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) throws IOException {
-//        String url = blobStorageService.uploadFile(file);
-//        return ResponseEntity.ok(url);
-//    }
-
+    @GetMapping("/blob/{name}")
+    public ResponseEntity<?> getBlobUrl(@PathVariable String name) {
+        Optional<BlobClient> optionalBlobClient = storageService.findFileBlob(name);
+        if (optionalBlobClient.isPresent()){
+            String urlBlob=optionalBlobClient.get().getBlobUrl();
+            logger.info("Url del blob encontrado: "+urlBlob);
+            return ResponseEntity.ok(urlBlob);
+        }
+        logger.info("No se encontró archivo Blob!");
+        return ResponseEntity.notFound().build();
+    }
 }

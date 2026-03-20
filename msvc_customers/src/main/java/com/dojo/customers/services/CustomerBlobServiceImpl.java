@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class BlobStorageServiceImpl implements CustomerBlobService{
+public class CustomerBlobServiceImpl implements CustomerBlobService{
     private BlobContainerClient containerClient;
 
-    public BlobStorageServiceImpl(@Value("${conection-string.blob.storage}") String connectionString,
-                                  @Value("${container.name.customer}") String containerName){
+    public CustomerBlobServiceImpl(@Value("${conection-string.blob.storage}") String connectionString,
+                                   @Value("${container.name.customer}") String containerName){
         BlobServiceClient serviceClient = new BlobServiceClientBuilder()
                 .connectionString(connectionString)
                 .buildClient();
